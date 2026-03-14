@@ -1,4 +1,3 @@
-cat > README.md << 'EOF'
 # MYT Whitepaper
 
 ## Files
