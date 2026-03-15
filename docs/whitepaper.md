@@ -1,6 +1,6 @@
-# MYT Whitepaper v1.0
+# MYT Whitepaper v1.1
 
-Canonical PDF version: [MYT-Whitepaper-v1.0.pdf](./MYT-Whitepaper-v1.0.pdf)
+Canonical PDF version: [MYT_Whitepaper_v1.1.pdf](./MYT_Whitepaper_v1.1.pdf)
 
 ## Abstract
 TBD
@@ -32,3 +32,4 @@ TBD
 
 ## Changelog
 - v1.0: Initial release
+- v1.1: Updated hardfork table and schedule documentation
