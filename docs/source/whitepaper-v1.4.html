@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MYT Whitepaper v1.4</title>
+<style>
+  @page { size: A4; margin: 22mm 20mm 20mm 20mm; }
+  :root { --ink: #10141c; --muted: #5a6475; --line: #dfe4ec; --accent: #0b5fce; --soft: #f3f6fb; }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { margin: 0; color: var(--ink); font-family: "Inter", "Helvetica Neue", Arial, sans-serif; font-size: 10.4pt; line-height: 1.55; }
+  h1, h2, h3 { line-height: 1.2; letter-spacing: -0.01em; }
+  h2 { font-size: 19pt; margin: 0 0 10pt; padding-top: 2pt; break-after: avoid; }
+  h2 .num { color: var(--accent); margin-right: 8pt; }
+  h3 { font-size: 12.5pt; margin: 16pt 0 6pt; break-after: avoid; }
+  p { margin: 0 0 8pt; text-align: justify; hyphens: auto; }
+  section { break-before: auto; margin-top: 24pt; }
+  section.flow { break-before: auto; margin-top: 24pt; }
+  h2 + p, h3 + p, h3 + table, h2 + table { break-before: avoid; }
+  table { width: 100%; border-collapse: collapse; margin: 8pt 0 12pt; font-size: 9.4pt; break-inside: avoid; }
+  th, td { text-align: left; padding: 5pt 7pt; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--soft); font-weight: 650; color: #273246; }
+  code, .mono { font-family: "DejaVu Sans Mono", "Consolas", monospace; font-size: 9pt; }
+  pre { background: var(--soft); border-radius: 6pt; padding: 8pt 10pt; font-size: 9pt; margin: 6pt 0 10pt; }
+  .box { background: var(--soft); border-left: 3pt solid var(--accent); border-radius: 4pt; padding: 9pt 12pt; margin: 8pt 0 12pt; break-inside: avoid; }
+  .box h4 { margin: 0 0 5pt; font-size: 10.5pt; }
+  .box ul { margin: 0; padding-left: 14pt; }
+  .box li { margin: 2pt 0; }
+  .note { color: var(--muted); font-size: 9pt; }
+  .tag { display: inline-block; font-size: 8pt; font-weight: 700; padding: 1pt 6pt; border-radius: 8pt; margin-left: 4pt; vertical-align: 1pt; }
+  .tag.live { background: #dff6e7; color: #116b33; }
+  .tag.rc { background: #fff1d6; color: #8a5a00; }
+  .tag.plan { background: #e8eefb; color: #2b4f8f; }
+  /* cover */
+  .cover { height: 252mm; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; background: #000; color: #f4f7ff; margin: 0; padding: 16mm; border-radius: 10pt; break-after: page; }
+  .cover img { width: 120mm; height: auto; margin-bottom: 4mm; -webkit-mask-image: radial-gradient(ellipse 48% 50% at 50% 50%, #000 60%, transparent 100%); mask-image: radial-gradient(ellipse 48% 50% at 50% 50%, #000 60%, transparent 100%); }
+  .cover h1 { font-size: 40pt; margin: 0 0 6pt; letter-spacing: -0.03em; }
+  .cover .sub { font-size: 15pt; color: #b9c8e6; margin: 0 0 18pt; }
+  .cover .meta { font-size: 10.5pt; color: #8fa2c4; }
+  .toc ol { padding-left: 16pt; columns: 2; column-gap: 24pt; }
+  .toc li { margin: 3pt 0; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <img src="myt_logo.png" alt="MYT logo">
+  <h1>MYT</h1>
+  <p class="sub">A Privacy-Preserving Settlement Layer<br>for Machines, AI Agents, and Enterprises</p>
+  <p class="meta">Technical Specification &amp; Architecture<br>Version 1.4 · November 2026</p>
+</div>
+
+<section style="break-before: auto">
+  <h2>Abstract</h2>
+  <p>Modern digital economies increasingly depend on autonomous software systems, artificial intelligence agents, and distributed infrastructure. Yet existing financial networks remain fundamentally misaligned with machine-native settlement: they assume human oversight, tolerate surveillance, and offer no privacy guarantees for transacting parties.</p>
+  <p>MYT is a Proof-of-Work blockchain protocol designed as a privacy-preserving settlement layer for autonomous systems, individual users, and enterprise environments. Built on a CryptoNote-derived privacy architecture and secured by the RandomX mining algorithm, MYT combines cryptographically enforced transaction privacy with Bitcoin-style deterministic monetary policy and decentralized network security.</p>
+  <p>The protocol prioritizes technical stability, deterministic behavior, and long-term sustainability. On top of the base chain, the off-chain MYT Machine toolkit now provides machine payments, invoices, machine identities, address bindings, local reputation, and a release candidate for selectively disclosed settlement claims, while the privacy guarantees of the underlying network stay unchanged. MYT is designed to be foundational infrastructure — not a product.</p>
+
+  <div class="toc">
+    <h3>Contents</h3>
+    <ol>
+      <li>Introduction</li><li>Problem Statement</li><li>Related Systems</li><li>Design Principles</li>
+      <li>Network Architecture</li><li>Consensus Mechanism</li><li>Monetary Policy</li><li>Privacy &amp; Settlement Security</li>
+      <li>Ring Size and Anonymity Set</li><li>Block Size and Scalability</li><li>Network Parameters</li><li>Machine Settlement Layer</li>
+      <li>Selective Disclosure</li><li>Agent Identity Layer</li><li>Security Model</li><li>Early Network Considerations</li>
+      <li>Development Roadmap</li><li>Conclusion</li>
+    </ol>
+    <p class="note">Appendices: A — Core Network Parameters · B — Design Constraints · C — Network Resources &amp; Verification · D — Changes in v1.4</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">1</span>Introduction</h2>
+  <p>The emergence of autonomous software agents, machine learning systems, and distributed computation networks creates new requirements for financial infrastructure. These systems operate continuously, interact programmatically, and often require settlement across organizational or jurisdictional boundaries — without human intermediaries.</p>
+  <p>Existing blockchain infrastructure largely fails this use case. Transparent ledgers expose all transactional data to public surveillance. Centralized smart contract platforms introduce governance risk and points of censorship. Privacy-preserving alternatives either lack deterministic monetary policy or are not designed with machine-compatibility as a primary objective.</p>
+  <p>MYT addresses both the privacy deficit and the machine-compatibility gap by providing strong cryptographic transaction privacy, open Proof-of-Work mining, a capped and predictable supply schedule, and machine settlement tooling that operates strictly above the consensus layer.</p>
+  <p>This document describes the technical specification of the MYT protocol — including consensus parameters, privacy mechanisms, monetary policy, the implemented machine settlement layer, and planned protocol extensions.</p>
+
+  <section class="flow">
+  <h2><span class="num">2</span>Problem Statement</h2>
+  <h3>2.1 Surveillance Finance</h3>
+  <p>The majority of existing blockchain systems operate on fully transparent ledgers. All transaction inputs, outputs, amounts, and addresses are permanently visible to any observer. This design is incompatible with financial privacy as a baseline requirement — for individuals, enterprises, and autonomous systems alike.</p>
+  <h3>2.2 Absence of Machine-Native Settlement</h3>
+  <p>Autonomous software systems — AI agents, computation networks, automated service markets — require settlement infrastructure that operates without human oversight. Few privacy-preserving settlement layers have been designed with autonomous software systems as a primary use case.</p>
+  <h3>2.3 Verification Without Disclosure</h3>
+  <p>Enterprises and regulated environments require the ability to verify financial interactions without exposing full transactional history. Traditional privacy systems offer a binary choice: full transparency or complete opacity. Neither is sufficient for professional or regulatory contexts.</p>
+  <h3>2.4 Centralization Risk</h3>
+  <p>Many contemporary blockchain networks rely on delegated consensus, staking systems, or permissioned validator sets. These architectures introduce systemic governance risk and reduce resistance to censorship. Open Proof-of-Work consensus with an ASIC-resistant algorithm provides a more robust foundation.</p>
+  </section>
+</section>
+
+<section>
+  <h2><span class="num">3</span>Related Systems</h2>
+  <p>MYT shares lineage with several existing protocols. This section briefly positions MYT relative to the most relevant systems.</p>
+  <table>
+    <tr><th>Property</th><th>Bitcoin</th><th>Monero</th><th>Zcash</th><th>MYT</th></tr>
+    <tr><td>Transaction privacy</td><td>No</td><td>Yes</td><td>Optional</td><td>Yes</td></tr>
+    <tr><td>ASIC-resistant mining</td><td>No</td><td>Yes</td><td>No</td><td>Yes</td></tr>
+    <tr><td>Fixed supply cap</td><td>Yes</td><td>No*</td><td>No*</td><td>Yes</td></tr>
+    <tr><td>No tail emission</td><td>Yes</td><td>No</td><td>No</td><td>Yes</td></tr>
+    <tr><td>Machine settlement tooling</td><td>No</td><td>No</td><td>No</td><td>Yes (off-chain SDK)</td></tr>
+    <tr><td>Selective disclosure</td><td>No</td><td>Payment proofs</td><td>Viewing keys</td><td>Payment proofs; claim disclosure in RC</td></tr>
+    <tr><td>Agent identity layer</td><td>No</td><td>No</td><td>No</td><td>Off-chain (released)</td></tr>
+  </table>
+  <p class="note">* Monero and Zcash have tail emission or ongoing issuance schedules; their supplies are not capped in the way Bitcoin's and MYT's are.</p>
+  <p><strong>Bitcoin</strong> established the fixed-supply PoW model and proved decentralized monetary policy is achievable. MYT inherits this monetary design directly. Bitcoin's transparent ledger is by design unsuitable for private settlement.</p>
+  <p><strong>Monero</strong> is the most mature privacy-preserving PoW chain and the primary technical reference for MYT's privacy stack. MYT diverges in three ways: a fixed supply cap (no tail emission), a Bitcoin-style halving schedule, and an explicit design goal of machine-native settlement infrastructure.</p>
+  <p><strong>Zcash</strong> introduced zk-SNARK-based privacy but relies on optional shielded transactions. Its governance model and supply schedule differ materially from MYT's design goals.</p>
+  <p><strong>Smart contract platforms</strong> (Ethereum and derivatives) provide programmability but expose all transaction data by default. Their account-based models make private, permissionless machine settlement difficult without additional infrastructure.</p>
+
+  <section class="flow">
+  <h2><span class="num">4</span>Design Principles</h2>
+  <div class="box"><h4>Core Design Principles</h4><ul>
+    <li><strong>Privacy by default</strong> — sender, receiver, and amount are always protected. Privacy is not opt-in.</li>
+    <li><strong>Decentralization</strong> — Proof-of-Work with an ASIC-resistant algorithm ensures open participation.</li>
+    <li><strong>Deterministic monetary policy</strong> — the supply schedule is fixed, transparent, and unalterable.</li>
+    <li><strong>Infrastructure first</strong> — technical correctness and long-term stability over speculative growth.</li>
+    <li><strong>Machine compatibility</strong> — off-chain extensions enable autonomous software to perform secure financial settlement.</li>
+    <li><strong>No consensus-level identity</strong> — the blockchain remains a neutral settlement layer.</li>
+  </ul></div>
+  </section>
+</section>
+
+<section>
+  <h2><span class="num">5</span>Network Architecture</h2>
+  <p>MYT operates as a fully decentralized peer-to-peer network. Nodes maintain the blockchain, independently validate transactions and blocks, and propagate data without central coordination.</p>
+  <ul>
+    <li><strong>Full nodes</strong> maintain the complete blockchain and enforce all consensus rules.</li>
+    <li><strong>Mining nodes</strong> produce new blocks and secure the network through Proof-of-Work.</li>
+    <li><strong>Remote RPC nodes</strong> provide API access for wallets and downstream services. Remote wallets should connect over TLS and pin the node's certificate fingerprint.</li>
+    <li><strong>Light wallets</strong> connect to remote nodes without storing the full chain.</li>
+  </ul>
+  <table>
+    <tr><th>Service</th><th>Mainnet</th><th>Testnet</th><th>Stagenet</th></tr>
+    <tr><td>P2P (node communication)</td><td>39080</td><td>38080</td><td>48080</td></tr>
+    <tr><td>RPC (API interface)</td><td>39081</td><td>38081</td><td>48081</td></tr>
+    <tr><td>ZMQ (event streaming)</td><td>39082</td><td>38082</td><td>48082</td></tr>
+  </table>
+
+  <section class="flow">
+  <h2><span class="num">6</span>Consensus Mechanism</h2>
+  <p>MYT uses Proof-of-Work consensus. Miners compete to find a valid solution to a cryptographic puzzle, producing new blocks. The chain with the greatest cumulative work is the canonical chain.</p>
+  <h3>6.1 Mining Algorithm</h3>
+  <p>MYT uses a staged mining algorithm schedule inherited from the CryptoNote hardfork plan. At network launch (HF1, block 1), the active proof-of-work algorithm is CryptoNight. The network transitioned to RandomX at hardfork 12 (block 28,895).</p>
+  <table>
+    <tr><th>Phase</th><th>Block range</th><th>Algorithm</th></tr>
+    <tr><td>Launch – HF11</td><td>1 – 28,894</td><td>CryptoNight (variant per hardfork)</td></tr>
+    <tr><td>HF12+</td><td>28,895+</td><td>RandomX</td></tr>
+  </table>
+  <p>Algorithm selection is automatic: blocks with major version 12 or higher use RandomX, lower versions use CryptoNight. Both algorithms favor commodity hardware and reduce mining centralization risk.</p>
+  <h3>6.2 Block Time</h3>
+  <p>MYT targets a 60-second block production interval, providing fast confirmation, sufficient propagation time, and a clean basis for the emission schedule.</p>
+  </section>
+</section>
+
+<section>
+  <h3 style="margin-top:0">6.3 Hardfork Schedule</h3>
+  <p>MYT uses a compressed hardfork schedule designed to bring the network to full protocol maturity quickly. All consensus upgrades — including RingCT, Bulletproofs, CLSAG, and RandomX — activated within the first ~32,000 blocks. Ring sizes below count the real input plus decoys (ring size = mixin + 1).</p>
+  <table>
+    <tr><th>HF</th><th>Block height</th><th>Key changes</th></tr>
+    <tr><td>HF1</td><td>1</td><td>Genesis rules; CryptoNight PoW</td></tr>
+    <tr><td>HF2</td><td>23,135</td><td>Minimum ring size 3; dynamic outputs</td></tr>
+    <tr><td>HF3</td><td>23,711</td><td>Output amount rules</td></tr>
+    <tr><td>HF4</td><td>24,287</td><td>Dynamic fee model; transaction v2</td></tr>
+    <tr><td>HF5</td><td>24,863</td><td>Consensus refinements</td></tr>
+    <tr><td>HF6</td><td>25,439</td><td>Minimum ring size 5; RingCT enforced</td></tr>
+    <tr><td>HF7</td><td>26,015</td><td>Minimum ring size 7; sorted inputs</td></tr>
+    <tr><td>HF8</td><td>26,591</td><td>Ring size 11; Bulletproofs</td></tr>
+    <tr><td>HF9</td><td>27,167</td><td>Borromean range proofs banned</td></tr>
+    <tr><td>HF10</td><td>27,743</td><td>Bulletproofs v2; long-term block weight</td></tr>
+    <tr><td>HF11</td><td>28,319</td><td>Bulletproofs v2 enforced</td></tr>
+    <tr><td>HF12</td><td>28,895</td><td>RandomX activates; minimum 2 outputs</td></tr>
+    <tr><td>HF13</td><td>29,471</td><td>CLSAG ring signatures allowed</td></tr>
+    <tr><td>HF14</td><td>30,047</td><td>CLSAG enforced; old RingCT types banned</td></tr>
+    <tr><td>HF15</td><td>30,623</td><td>Ring size 16 (11 accepted during transition); Bulletproofs+; view tags</td></tr>
+    <tr><td>HF16</td><td>31,199</td><td>Ring size fixed at 16; tagged-key outputs enforced</td></tr>
+    <tr><td>HF17</td><td>162,084</td><td>Strict 21,000,000 MYT emission cap enforced</td></tr>
+  </table>
+  <p class="note">All hardfork heights are defined in <span class="mono">src/hardforks/hardforks.cpp</span>; ring-size rules in <span class="mono">src/cryptonote_core/blockchain.cpp</span>.</p>
+</section>
+
+<section>
+  <h2><span class="num">7</span>Monetary Policy</h2>
+  <p>MYT follows a deterministic emission schedule inspired by Bitcoin. The total supply is fixed, the issuance schedule is predictable, and no party can alter it.</p>
+  <h3>7.1 Emission Parameters</h3>
+  <table>
+    <tr><th>Parameter</th><th>Value</th></tr>
+    <tr><td>Maximum supply</td><td>21,000,000 MYT</td></tr>
+    <tr><td>Initial block reward</td><td>5 MYT</td></tr>
+    <tr><td>Halving interval</td><td>2,102,400 blocks (≈4 years)</td></tr>
+    <tr><td>Block time</td><td>60 seconds</td></tr>
+    <tr><td>Tail emission</td><td>None</td></tr>
+  </table>
+  <h3>7.2 Halving Schedule</h3>
+  <table>
+    <tr><th>Epoch</th><th>Block height range</th><th>Block reward</th></tr>
+    <tr><td>1</td><td>0 – 2,102,399</td><td>5.000000000 MYT</td></tr>
+    <tr><td>2</td><td>2,102,400 – 4,204,799</td><td>2.500000000 MYT</td></tr>
+    <tr><td>3</td><td>4,204,800 – 6,307,199</td><td>1.250000000 MYT</td></tr>
+    <tr><td>4</td><td>6,307,200 – 8,409,599</td><td>0.625000000 MYT</td></tr>
+  </table>
+  <p>Internally, all values are represented in atomic units where 1 MYT = 1,000,000,000 atomic units. The initial reward is therefore 5,000,000,000 atomic units. The halving is implemented as an integer right-shift on this atomic value:</p>
+  <pre>halvings      = height / HALVING_INTERVAL
+reward_atomic = INITIAL_REWARD_ATOMIC &gt;&gt; halvings</pre>
+  <p>Because the shift operates on atomic integer units, the result is always an exact integer with no rounding error. Since HF17 the 21,000,000 MYT cap is additionally enforced as an explicit consensus rule.</p>
+  <h3>7.3 No Tail Emission</h3>
+  <p>Once the supply is fully emitted, miner incentivization transitions entirely to transaction fees, preserving the hard supply cap.</p>
+</section>
+
+<section>
+  <h2><span class="num">8</span>Privacy &amp; Settlement Security</h2>
+  <h3>8.1 Reward Maturity</h3>
+  <p>Coinbase outputs become spendable only after 60 confirmed blocks. This prevents chain reorganizations from allowing double-spending of newly mined outputs and ensures settlement finality for miners.</p>
+  <p>MYT inherits its core privacy stack from the CryptoNote protocol — the same foundation used by Monero. Privacy mechanisms were progressively enforced through the hardfork schedule: RingCT from HF6, CLSAG from HF14 and Bulletproofs+ from HF15. On the mature network (HF16 and later), all mechanisms below are active by consensus and cannot be disabled.</p>
+  <h3>8.2 Ring Signatures</h3>
+  <p>Every transaction input is signed with a ring that includes the real input plus decoy outputs drawn from the blockchain. An observer cannot determine which ring member is the true input. The minimum ring size increased through the hardfork schedule — 3 from HF2, 5 from HF6, 7 from HF7 and 11 from HF8 — reaching 16 at HF15, with ring size 11 still accepted during the HF15 transition. Since HF16 every ring must contain exactly 16 members.</p>
+  <h3>8.3 Stealth Addresses</h3>
+  <p>Each transaction generates a unique one-time output address derived from the recipient's public key. An observer scanning the blockchain cannot link multiple transactions to the same recipient without the recipient's private view key. Published addresses are never written to the chain.</p>
+  <h3>8.4 Confidential Transactions</h3>
+  <p>Transaction amounts are hidden using Pedersen commitments with Bulletproofs+ range proofs. The network verifies that inputs equal outputs without any party observing the actual values transferred.</p>
+  <div class="box"><h4>Privacy Properties — Active on Mainnet</h4><ul>
+    <li>Sender anonymity: the true input is concealed within a ring of 16 members.</li>
+    <li>Receiver privacy: one-time stealth addresses; the published address never appears on-chain.</li>
+    <li>Amount confidentiality: all transaction values are hidden via Pedersen commitments.</li>
+    <li>Transaction unlinkability: no public link between inputs and outputs across transactions.</li>
+  </ul></div>
+  <h3>8.5 Practical Limitations of an Early-Stage Network</h3>
+  <p>Practical anonymity depends on the size and diversity of the decoy pool. A small transaction history means fewer useful decoys, which can reduce the effective anonymity set below what the protocol-enforced ring size suggests. As transaction history grows, practical privacy strengthens.</p>
+
+  <section class="flow">
+  <h2><span class="num">9</span>Ring Size and Anonymity Set</h2>
+  <table>
+    <tr><th>Parameter</th><th>Value</th></tr>
+    <tr><td>Consensus-enforced ring size</td><td>16 (since HF16; 15 decoys + real input)</td></tr>
+    <tr><td>Wallet default</td><td>Automatic (protocol ring size)</td></tr>
+    <tr><td>Enforcement</td><td>Consensus-level rejection of non-compliant transactions</td></tr>
+  </table>
+  </section>
+</section>
+
+<section>
+  <h2><span class="num">10</span>Block Size and Scalability</h2>
+  <p>MYT uses a dynamic block weight model. The network adjusts the block weight limit based on recent usage, allowing throughput to scale without hard forks.</p>
+  <table>
+    <tr><th>Parameter</th><th>Value</th></tr>
+    <tr><td>Max block weight</td><td>2 × median block weight</td></tr>
+    <tr><td>Long-term weight window</td><td>100,000 blocks</td></tr>
+    <tr><td>Full reward zone</td><td>300,000 bytes</td></tr>
+    <tr><td>Maximum transaction size</td><td>1,000,000 bytes</td></tr>
+  </table>
+  <p>Blocks exceeding the median weight receive a penalized reward, creating a market mechanism that calibrates block sizes to actual demand.</p>
+
+  <section class="flow">
+  <h2><span class="num">11</span>Network Parameters</h2>
+  <h3>11.1 Transaction Fees</h3>
+  <p>MYT implements a dynamic fee model. Fees are calculated from transaction weight, median block weight, and the current base block reward — automatically adjusting to network conditions. As halvings reduce the block reward, transaction fees become the primary miner incentive.</p>
+  <h3>11.2 Address Format</h3>
+  <p>MYT uses Base58-encoded addresses. A varint-encoded prefix distinguishes network and address type.</p>
+  <table>
+    <tr><th>Network</th><th>Standard</th><th>Integrated</th><th>Subaddress</th></tr>
+    <tr><td>Mainnet</td><td>55</td><td>56</td><td>57</td></tr>
+    <tr><td>Testnet</td><td>155</td><td>156</td><td>157</td></tr>
+    <tr><td>Stagenet</td><td>255</td><td>256</td><td>257</td></tr>
+  </table>
+  <h3>11.3 Protocol Upgrades</h3>
+  <p>MYT supports versioned protocol upgrades through scheduled hardforks activating at predefined block heights. Activation is deterministic; no central authority controls upgrade timing or content.</p>
+  </section>
+</section>
+
+<section>
+  <h2><span class="num">12</span>Machine Settlement Layer</h2>
+  <p>The machine settlement layer is implemented as <strong>MYT Machine</strong>, an open-source Python SDK and CLI with an optional Node companion. It runs entirely off-chain on top of a standard MYT wallet RPC. The base blockchain protocol is unchanged; no machine logic is introduced at the consensus layer.</p>
+  <table>
+    <tr><th>Phase</th><th>Capability</th><th>Status</th></tr>
+    <tr><td>4A</td><td>Exact-amount payments, wallet-local payment status, native payment proofs and wallet signatures</td><td><span class="tag live">Released v0.1.0</span></td></tr>
+    <tr><td>4B</td><td>Offline Ed25519 machine identities and challenge-response authentication</td><td><span class="tag live">Released v0.2.0</span></td></tr>
+    <tr><td>4C</td><td>Two-sided, selectively disclosed binding between a machine identity and a settlement address</td><td><span class="tag live">Released v0.3.0</span></td></tr>
+    <tr><td>4D</td><td>Immutable payment requests, persistent invoices and API billing; PAID only with a verified invoice-bound payment proof</td><td><span class="tag live">Released v0.4.0</span></td></tr>
+    <tr><td>4E</td><td>Signed reputation opinions, revocations, private settlement observations and an explicit local policy</td><td><span class="tag live">Released v0.5.0 / v0.5.1</span></td></tr>
+    <tr><td>4F</td><td>Randomized BBS selective disclosure of evaluator-issued reputation claims</td><td><span class="tag rc">Release candidate</span></td></tr>
+  </table>
+  <h3>12.1 Why MYT for Machine Settlement?</h3>
+  <div class="box"><h4>The Case for MYT in Machine Economies</h4><ul>
+    <li><strong>Permissionless access</strong> — no account registration, identity verification or API key is required to transact.</li>
+    <li><strong>Privacy-preserving payments</strong> — payment flows do not leak operational patterns, infrastructure costs or business logic of automated systems.</li>
+    <li><strong>Non-custodial settlement</strong> — unlike API credits or internal balances, MYT cannot be frozen, revoked or deducted by a third party.</li>
+    <li><strong>Verifiable on demand</strong> — agents can produce native payment proofs and, with MYT Machine, invoice-bound evidence without exposing their full history.</li>
+  </ul></div>
+  <h3>12.2 Target Use Cases</h3>
+  <ul>
+    <li>AI agents executing autonomous service payments without operator intervention</li>
+    <li>Distributed compute networks settling resource usage between nodes</li>
+    <li>Automated API billing with cryptographic payment verification</li>
+    <li>Enterprise machine-to-machine payments that require audit evidence</li>
+    <li>Decentralized model inference and data-market micropayments</li>
+  </ul>
+  <h3>12.3 Trust Boundaries</h3>
+  <p>MYT Machine never initiates outgoing payments on behalf of invoices. Reputation is local and policy-driven: there is no global trust score, and machine identities do not imply independent people or organizations. Phase 4F companions communicate over TLS with pinned certificates and separate capabilities for signers and verifiers.</p>
+</section>
+
+<section>
+  <h2><span class="num">13</span>Selective Disclosure</h2>
+  <p>All MYT transactions are private by default. Disclosure is always explicit, opt-in, and controlled by the key holder.</p>
+  <table>
+    <tr><th>Capability</th><th>Status</th></tr>
+    <tr><td>Single-transaction proof — prove a specific payment to an address (<span class="mono">get_tx_proof</span> / <span class="mono">check_tx_proof</span>)</td><td><span class="tag live">Live in wallet</span></td></tr>
+    <tr><td>Spend proof — prove that you sent a transaction (<span class="mono">get_spend_proof</span>)</td><td><span class="tag live">Live in wallet</span></td></tr>
+    <tr><td>Reserve proof — prove a minimum unspent balance (<span class="mono">get_reserve_proof</span>)</td><td><span class="tag live">Live in wallet</span></td></tr>
+    <tr><td>Invoice-bound payment evidence for automated services (MYT Machine 4D)</td><td><span class="tag live">Released</span></td></tr>
+    <tr><td>Threshold claim disclosure, e.g. “at least 25 verified settlements”, without revealing the exact count (MYT Machine 4F, BBS)</td><td><span class="tag rc">Release candidate</span></td></tr>
+    <tr><td>Zero-knowledge balance-range or transaction-set audit proof</td><td><span class="tag plan">Planned</span></td></tr>
+    <tr><td>Counterparty-blind proof (“I paid X” without identifying the recipient)</td><td><span class="tag plan">Planned</span></td></tr>
+  </table>
+  <p>The 4F threshold claim is attested by an evaluator from verified settlement evidence; it is not a mathematical hidden-value range proof. The subject machine ID and evaluator remain public, so presentations are linkable. Independent external cryptographic review of 4F is pending, and a stable release is gated on that review.</p>
+
+  <section class="flow">
+  <h2><span class="num">14</span>Agent Identity Layer</h2>
+  <p>The agent identity layer is fully off-chain. No identity data is written to the base blockchain.</p>
+  <h3>14.1 Machine Identifiers</h3>
+  <p>Each agent generates an Ed25519 key pair offline. Its machine ID is derived from the public key, giving a stable, pseudonymous identity without real-world linkage.</p>
+  <h3>14.2 Reputation and Trust</h3>
+  <table>
+    <tr><th>Component</th><th>Status</th></tr>
+    <tr><td>Cryptographic machine ID and challenge-response authentication</td><td><span class="tag live">Released (4B)</span></td></tr>
+    <tr><td>Signed address binding between identity and settlement address</td><td><span class="tag live">Released (4C)</span></td></tr>
+    <tr><td>Signed opinions, revocations and local settlement observations</td><td><span class="tag live">Released (4E)</span></td></tr>
+    <tr><td>Explicit, deterministic local trust policy</td><td><span class="tag live">Released (4E)</span></td></tr>
+    <tr><td>Shared trust graph across operators</td><td><span class="tag plan">Under design</span></td></tr>
+  </table>
+  <p>Signed feedback is opinion, not verified service quality, and a payment alone cannot identify a payer's machine ID.</p>
+  </section>
+</section>
+
+<section>
+  <h2><span class="num">15</span>Security Model</h2>
+  <h3>15.1 Proof-of-Work Security</h3>
+  <p>An attacker reorganizing the chain must outpace the honest network, requiring majority hashrate and substantial capital. Attack cost scales with total network hashrate.</p>
+  <h3>15.2 ASIC Resistance</h3>
+  <p>RandomX limits specialized hardware advantages, preserving a distributed miner base and improving censorship resistance.</p>
+  <h3>15.3 Double-Spend Prevention</h3>
+  <p>Each input generates a unique key image recorded on-chain. Duplicate key images are rejected, preventing double-spend attempts.</p>
+  <h3>15.4 Sybil Resistance</h3>
+  <p>Block production requires real computational work. Operating additional nodes grants no mining advantage.</p>
+  <h3>15.5 Privacy Attack Resistance</h3>
+  <p>Ring signatures, stealth addresses, and confidential transactions significantly complicate amount-based and graph-based analysis.</p>
+  <h3>15.6 Operational Security</h3>
+  <p>Wallets connecting to remote nodes should use TLS with a certificate fingerprint obtained over an authenticated channel; the updated Windows launcher requires one for its online mode. Wallet RPC servers should run on loopback with authentication. Block explorers never need wallet keys: payment evidence is created and checked locally in the wallet.</p>
+  <h3>15.7 Known Early-Stage Risk Factors</h3>
+  <div class="box"><ul>
+    <li>Lower hashrate than mature PoW networks — 51% attack cost scales with network hashrate.</li>
+    <li>Smaller decoy pool — practical ring anonymity is limited by total transaction history.</li>
+    <li>Seed node concentration — initial infrastructure is operated by the core team.</li>
+    <li>Limited ecosystem tooling — explorer, wallet, and integration maturity are still developing.</li>
+  </ul></div>
+</section>
+
+<section>
+  <h2><span class="num">16</span>Early Network Considerations</h2>
+  <p>MYT is a live mainnet in its early growth phase. The following considerations reflect the honest current state of the network.</p>
+  <h3>16.1 Hashrate and Network Security</h3>
+  <p>Early-stage Proof-of-Work networks operate with lower total hashrate than mature networks. Users and services should apply appropriate confirmation depths during this phase; MYT Machine invoices default to ten confirmations.</p>
+  <h3>16.2 Anonymity Set Size</h3>
+  <p>The practical strength of ring signature privacy depends on the size of the available decoy pool. Privacy improves as transaction volume grows.</p>
+  <h3>16.3 Tooling and Infrastructure Maturity</h3>
+  <p>Wallet software, block explorers, and third-party integrations are functional and continue to evolve. Security fixes are delivered through tagged releases with published SHA-256 checksums.</p>
+  <h3>16.4 Exchange and Ecosystem Integration</h3>
+  <p>As a newly launched network, MYT does not yet have broad exchange listings or extensive third-party service integration.</p>
+  <h3>16.5 Early Infrastructure Concentration</h3>
+  <p>Initial seed nodes and public infrastructure are operated by the core development team. Expanding the set of independent node operators is a priority for long-term decentralization.</p>
+
+  <section class="flow">
+  <h2><span class="num">17</span>Development Roadmap</h2>
+  <h3>Phase 1 — Local Testnet <span class="tag live">Completed</span></h3>
+  <p>Core chain logic validated: deterministic block production, wallet-daemon communication, mining, stable RPC, and transaction processing.</p>
+  <h3>Phase 2 — Public Testnet <span class="tag live">Completed</span></h3>
+  <p>Public seed nodes, external wallet connectivity, multi-node sync, block explorer, and network health metrics deployed.</p>
+  <h3>Phase 3 — Mainnet <span class="tag live">Live</span></h3>
+  <p>Mainnet is live with finalized consensus parameters. Release packages for Linux and Windows are published with SHA-256 checksums. The reproducible (Guix-based) build pipeline is being restored so that independent parties can rebuild identical binaries.</p>
+  <h3>Phase 4 — Machine Settlement Layer <span class="tag rc">Active</span></h3>
+  <p>Phases 4A–4E are released in MYT Machine. Phase 4F (selective disclosure of reputation claims) is in release-candidate review pending independent cryptographic review. Next: zero-knowledge audit proofs, counterparty-blind proofs and shared trust infrastructure. The base chain remains a neutral settlement layer throughout.</p>
+  </section>
+</section>
+
+<section>
+  <h2><span class="num">18</span>Conclusion</h2>
+  <p>MYT is financial infrastructure for a digital economy in which autonomous systems transact programmatically, enterprises require verifiable settlement without surveillance, and individuals demand genuine financial privacy.</p>
+  <p>With CryptoNote-derived privacy, RandomX Proof-of-Work, and Bitcoin-style monetary policy, MYT provides a technically sound and economically predictable foundation. MYT Machine builds payments, invoices, identity and reputation on top of this foundation without compromising its neutrality.</p>
+  <p>MYT does not optimize for short-term speculation. It is built to be infrastructure — reliable, deterministic, and still useful decades from now.</p>
+
+  <section class="flow">
+  <h2>Appendix A — Core Network Parameters</h2>
+  <table>
+    <tr><th>Parameter</th><th>Value</th></tr>
+    <tr><td>Consensus mechanism</td><td>Proof-of-Work</td></tr>
+    <tr><td>Mining algorithm</td><td>CryptoNight (launch) → RandomX (HF12, block 28,895)</td></tr>
+    <tr><td>Block time</td><td>60 seconds</td></tr>
+    <tr><td>Maximum supply</td><td>21,000,000 MYT (consensus rule since HF17)</td></tr>
+    <tr><td>Initial block reward</td><td>5 MYT (5,000,000,000 atomic units)</td></tr>
+    <tr><td>Atomic unit</td><td>0.000000001 MYT (10<sup>-9</sup>)</td></tr>
+    <tr><td>Halving interval</td><td>2,102,400 blocks (≈4 years)</td></tr>
+    <tr><td>Coinbase unlock window</td><td>60 blocks</td></tr>
+    <tr><td>Ring size</td><td>16 (consensus enforced since HF16)</td></tr>
+    <tr><td>Mainnet address prefixes</td><td>55 standard · 56 integrated · 57 subaddress</td></tr>
+    <tr><td>Mainnet ports</td><td>39080 P2P · 39081 RPC · 39082 ZMQ</td></tr>
+    <tr><td>Difficulty window / lag / cut</td><td>720 blocks / 15 blocks / 60</td></tr>
+    <tr><td>Full reward zone</td><td>300,000 bytes</td></tr>
+    <tr><td>Max transaction size</td><td>1,000,000 bytes</td></tr>
+    <tr><td>Tail emission</td><td>None</td></tr>
+  </table>
+  </section>
+</section>
+
+<section>
+  <h2>Appendix B — Design Constraints</h2>
+  <ul>
+    <li><strong>No AI in consensus:</strong> autonomous agents may use MYT but cannot control validation.</li>
+    <li><strong>No identity enforcement:</strong> the base chain enforces no identity requirements.</li>
+    <li><strong>No central upgrade authority:</strong> protocol changes require broad adoption.</li>
+    <li><strong>Fixed supply:</strong> the 21,000,000 MYT cap is a consensus rule.</li>
+    <li><strong>Privacy by default:</strong> transaction privacy cannot be disabled at protocol level.</li>
+  </ul>
+
+  <h2 style="margin-top:22pt">Appendix C — Network Resources &amp; Verification</h2>
+  <table>
+    <tr><th>Resource</th><th>Details</th></tr>
+    <tr><td>Core source code</td><td>github.com/MYT-Core/MYT</td></tr>
+    <tr><td>MYT Machine</td><td>github.com/MYT-Core/MYT-Machine</td></tr>
+    <tr><td>Block explorer source</td><td>github.com/MYT-Core/myt-explorer</td></tr>
+    <tr><td>Whitepaper source</td><td>github.com/MYT-Core/MYT-Whitepaper (HTML source and build script in <span class="mono">docs/source</span>)</td></tr>
+    <tr><td>Release integrity</td><td>SHA-256 checksums published with every release</td></tr>
+  </table>
+  <p>Any node operator can independently verify consensus rules by running a full node.</p>
+
+  <h2 style="margin-top:22pt">Appendix D — Changes in v1.4</h2>
+  <ul>
+    <li>Version number and date corrected on the cover and in page headers.</li>
+    <li>Ring sizes stated consistently (ring size = decoys + real input) in the hardfork table, Section 8.2 and Appendix A.</li>
+    <li>Sections 12–14 and the roadmap updated to the implemented MYT Machine phases 4A–4F, including release status and trust boundaries.</li>
+    <li>Native wallet payment, spend and reserve proofs listed as live disclosure capabilities.</li>
+    <li>Testnet and stagenet ports added; operational guidance for remote wallets added (Section 15.6).</li>
+    <li>Build reproducibility stated as in progress rather than complete.</li>
+    <li>Disclaimer section reference corrected.</li>
+  </ul>
+  <p class="note" style="margin-top:16pt">Disclaimer: This document is a technical overview and development roadmap. It does not constitute an offer of securities, financial advice, or investment recommendation. MYT is live software; parameters described herein reflect the deployed mainnet configuration. Features marked as release candidate or planned (Sections 12–14 and 17) are under active development and subject to revision.</p>
+</section>
+
+</body>
+</html>
