@@ -22,7 +22,7 @@ node docs/source/build_pdf.cjs v1.4
 
 MYT Machine phases 4A–4E (payments, machine identity, address binding,
 invoices/billing, reputation) are released. Phase 4F in
-[v0.6.0-rc1](https://github.com/MYT-Core/MYT-Machine/releases/tag/v0.6.0-rc1)
+[v0.6.0-rc2](https://github.com/MYT-Core/MYT-Machine/releases/tag/v0.6.0-rc2)
 adds a selective-disclosure proof for a threshold of evaluator-verified
 recipient settlement events. The verifier learns the selected threshold and
 public context while the exact count stays private. Independently controlled
