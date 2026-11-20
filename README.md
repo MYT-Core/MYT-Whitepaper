@@ -1,7 +1,7 @@
 # MYT Whitepaper
 
 ## Files
-- PDF (latest): [docs/MYT_Whitepaper_v1.4.pdf](docs/MYT_Whitepaper_v1.4.pdf)
+- PDF (latest, November 2026): [docs/MYT_Whitepaper_v1.4.pdf](docs/MYT_Whitepaper_v1.4.pdf)
 - PDF (v1.3): [docs/MYT_Whitepaper_v1.3.pdf](docs/MYT_Whitepaper_v1.3.pdf)
 - PDF (v1.2): [docs/MYT_Whitepaper_v1.2.pdf](docs/MYT_Whitepaper_v1.2.pdf)
 - PDF (v1.0): [docs/MYT-Whitepaper-v1.0.pdf](docs/MYT-Whitepaper-v1.0.pdf)
@@ -31,3 +31,5 @@ review of the candidate is pending.
 
 Sections 12–14 of whitepaper v1.4 describe the implemented scope and the
 remaining roadmap, including balance-range and counterparty-blind proofs.
+
+Current MYT Core release: [v1.0.3-mainnet](https://github.com/MYT-Core/MYT/releases/tag/v1.0.3-mainnet) (security update, no consensus changes).
